@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Animations Demo</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            transition: background-color 0.5s ease;
+        }
+
+        .container {
+            background-color: #f5f5f5;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        /* Button with CSS transition */
+        .action-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 20px auto;
+        }
+
+        .action-btn:hover {
+            background-color: #45a049;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .action-btn:active {
+            transform: translateY(1px);
+        }
+
+        /* Animated box */
+        .animated-box {
+            width: 150px;
+            height: 150px;
+            background-color: #4285f4;
+            margin: 30px auto;
+            border-radius: 8px;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        /* Animation classes */
+        .spin {
+            animation: spin 1.5s linear infinite;
+        }
+
+        .pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .expand {
+            transform: scale(1.2);
+            background-color: #ff5722;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* Theme selector */
+        .theme-selector {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .theme-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .theme-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .theme-btn.active {
+            transform: scale(1.15);
+            border-color: #333;
+        }
+
+        /* Preferences panel */
+        .preferences {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Interactive Animations</h1>
+        
+        <div class="theme-selector">
+            <div class="theme-btn active" data-theme="light" style="background: #f5f5f5;"></div>
+            <div class="theme-btn" data-theme="dark" style="background: #333;"></div>
+            <div class="theme-btn" data-theme="blue" style="background: #2196F3;"></div>
+            <div class="theme-btn" data-theme="green" style="background: #4CAF50;"></div>
+        </div>
+
+        <button class="action-btn" id="animateBtn">Trigger Animation</button>
+        
+        <div class="animated-box" id="animatedBox"></div>
+        
+        <div class="preferences">
+            <h3>Your Preferences</h3>
+            <p>Selected Theme: <span id="currentTheme">light</span></p>
+            <p>Animation Count: <span id="animationCount">0</span></p>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const animateBtn = document.getElementById('animateBtn');
+        const animatedBox = document.getElementById('animatedBox');
+        const themeButtons = document.querySelectorAll('.theme-btn');
+        const currentThemeSpan = document.getElementById('currentTheme');
+        const animationCountSpan = document.getElementById('animationCount');
+
+        // Load saved preferences from localStorage
+        function loadPreferences() {
+            // Theme preference
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            setTheme(savedTheme);
+            
+            // Animation count
+            const count = localStorage.getItem('animationCount') || 0;
+            animationCountSpan.textContent = count;
+        }
+
+        // Save theme preference
+        function setTheme(theme) {
+            // Update UI
+            themeButtons.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.theme === theme);
+            });
+            
+            // Apply theme to body
+            document.body.className = theme;
+            currentThemeSpan.textContent = theme;
+            
+            // Save to localStorage
+            localStorage.setItem('theme', theme);
+        }
+
+        // Handle theme selection
+        themeButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                setTheme(button.dataset.theme);
+            });
+        });
+
+        // Animation counter
+        let animationCount = localStorage.getItem('animationCount') || 0;
+
+        // Handle animation button click
+        animateBtn.addEventListener('click', () => {
+            // Reset any ongoing animations
+            animatedBox.className = 'animated-box';
+            
+            // Trigger reflow before applying new animation
+            void animatedBox.offsetWidth;
+            
+            // Randomly select an animation
+            const animations = ['spin', 'pulse', 'expand'];
+            const randomAnim = animations[Math.floor(Math.random() * animations.length)];
+            
+            // Apply animation
+            animatedBox.classList.add(randomAnim);
+            
+            // Increment and save count
+            animationCount++;
+            animationCountSpan.textContent = animationCount;
+            localStorage.setItem('animationCount', animationCount);
+            
+            // Remove animation after it completes (for expand)
+            if (randomAnim === 'expand') {
+                setTimeout(() => {
+                    animatedBox.classList.remove('expand');
+                }, 1000);
+            }
+        });
+
+        // Initialize
+        loadPreferences();
+    </script>
+</body>
+</html>
